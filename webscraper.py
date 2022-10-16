@@ -1,6 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import sys
+import argparse
 import re
 import requests
 from urllib.parse import urlsplit
@@ -8,31 +9,22 @@ from urllib.request import Request, urlopen
 from collections import deque
 from bs4 import BeautifulSoup
 import pandas as pd
+from validate_email_address import validate_email
 
-def check_static(str_url):
-    req = Request(
-            url=str_url,
-            headers={'User-Agent': 'Mozilla/5.0'}
-            )
-
-    webpage = urlopen(req).read()
-    text = webpage.decode()
-
-    if re.findall('(.*?)', text):
-        return 1
-    else:
-        return 0
-
-def web_scraper(str_url):
+def web_scraper(str_url, arg_t, arg_a, arg_m):
     original_url = str_url
+    tag = arg_t
+    attr = arg_a
+    scrape_max = arg_m
 
     unscraped = deque([original_url])
     scraped = set()
     emails = set()
+    values = set()
 
-    num_to_scrape = 50
+    scrape_max = 50
 
-    while len(unscraped) and len(scraped) < num_to_scrape:
+    while len(unscraped) and len(scraped) < scrape_max:
         url = unscraped.popleft()
         scraped.add(url)
 
@@ -51,10 +43,15 @@ def web_scraper(str_url):
             print('Excpetion caught')
             continue
 
-        new_emails = set(re.findall(r'[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.co', response.text, re.I))
+        new_emails = set(re.findall(r'[\w.+-]+@[\w-]+\.[\w.-]+', response.text, re.I))
         emails.update(new_emails)
 
         soup = BeautifulSoup(response.text, 'lxml')
+
+        if tag:
+            for t in soup.find_all(tag):
+                if attr in t.attrs:
+                    values.append(t.attrs[attr])
 
         for anchor in soup.find_all('a'):
             if 'href' in anchor.attrs:
@@ -72,22 +69,32 @@ def web_scraper(str_url):
                     if not link in unscraped and not link in scraped:
                         unscraped.append(link)
 
-    df = pd.DataFrame(emails, columns = ['Email'])
-    df.to_csv('email.csv', index = False)
+    email_validator(emails)
+
+    df = pd.DataFrame(values, columns=['Requested values'])
+    df.to_csv('values.csv', index=False)
+
+def email_validator(email_list):
+    for e in email_list.copy():
+        if not validate_email(e, verify=True):
+            print(f'Email {e} is not valid. Removing from list')
+            email_list.remove(e)
+
+    df = pd.DataFrame(email_list, columns=['Email'])
+    df.to_csv('email.csv', index=False)
 
 def main():
     ## implement argparser ##
-    ## len(sys.argv) will suffice for now ##
-    if len(sys.argv) == 2:
-        domain = sys.argv[1]
-    else:
-        print(f'You must provide the domain to be scraped.\nUsage: ./webscraper [DOMAIN]')
-        return
+    parser = argparse.ArgumentParser(usage='./webscraper.py [-h] DOMAIN [-t TAG -a ATTR] [-m MAX]')
+    parser.add_argument('domain', help='specify the domain to be scraped', metavar='DOMAIN')
+    tag_grp = parser.add_argument_group('tag option')
+    tag_grp.add_argument('-t', '--tag', type=str, help='specify a tag to scrape')
+    tag_grp.add_argument('-a', '--attr', type=str, help='specify a tag attribute to scrape')
+    parser.add_argument('-m', '--max', type=int, help='maximum number of URLs to scrape')
+    args = parser.parse_args()
+    print(args)
 
-    if check_static(domain):
-        web_scraper(domain)
-    else:
-        print(f'The domain {domain} is not a static page. Only static webpages are currently supported.')
+    web_scraper(args.domain, args.tag, args.attr, args.max)
 
 ### BOILERPLATE ###
 if __name__ == "__main__":
