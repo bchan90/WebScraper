@@ -4,6 +4,13 @@ import sys
 import argparse
 import re
 import requests
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.firefox.options import Options
+from webdriver_manager.firefox import GeckoDriverManager
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 from collections import deque
@@ -12,9 +19,13 @@ import pandas as pd
 from validate_email_address import validate_email
 
 def web_scraper(str_url, arg_t, arg_a, arg_m):
+    # Selenium Driver Set-up #
+    service = Service(executable_path=GeckoDriverManager().install())
+    options = Options()
+    options.add_argument('--headless')
+    driver = webdriver.Firefox(options=options, service=service)
+
     original_url = str_url
-    tag = arg_t
-    attr = arg_a
     scrape_max = arg_m
 
     unscraped = deque([original_url])
@@ -22,9 +33,12 @@ def web_scraper(str_url, arg_t, arg_a, arg_m):
     emails = set()
     values = set()
 
-    scrape_max = 50
+    if not arg_m:
+        scrape_max = 50
 
     while len(unscraped) and len(scraped) < scrape_max:
+        # re-initalize elements #
+        elements = ()
         url = unscraped.popleft()
         scraped.add(url)
 
@@ -48,10 +62,40 @@ def web_scraper(str_url, arg_t, arg_a, arg_m):
 
         soup = BeautifulSoup(response.text, 'lxml')
 
-        if tag:
-            for t in soup.find_all(tag):
-                if attr in t.attrs:
-                    values.append(t.attrs[attr])
+        ## IF STATIC PAGE ##
+#        if tag:
+#            for t in soup.find_all(tag):
+#                if attr in t.attrs:
+#                    values.append(t.attrs[attr])
+        ## IF DYNAMIC PAGE ##
+        driver.get(url)
+        try:
+            WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CLASS_NAME,arg_a)))
+        except:
+            pass
+        finally:
+            pass
+#        for element in driver.find_elements(By.TAG_NAME, tag):
+#            try:
+#                values.add(element.find_element(By.CLASS_NAME, attr).text)
+#            except:
+#                continue
+        if arg_t:
+            try:
+                elements = driver.find_elements(By.TAG_NAME, arg_t)
+                for element in elements:
+                    values.add(element.text)
+            except:
+                pass
+
+        if arg_a:
+            try:
+                elements = driver.find_elements(By.CLASS_NAME, arg_a)
+                for element in elements:
+                    print('class "client" found')
+                    values.add(element.text)
+            except:
+                pass
 
         for anchor in soup.find_all('a'):
             if 'href' in anchor.attrs:
@@ -68,6 +112,8 @@ def web_scraper(str_url, arg_t, arg_a, arg_m):
                 if link.startswith(original_url):
                     if not link in unscraped and not link in scraped:
                         unscraped.append(link)
+
+    driver.quit()
 
     email_validator(emails)
 
@@ -90,7 +136,7 @@ def main():
     tag_grp = parser.add_argument_group('tag option')
     tag_grp.add_argument('-t', '--tag', type=str, help='specify a tag to scrape')
     tag_grp.add_argument('-a', '--attr', type=str, help='specify a tag attribute to scrape')
-    parser.add_argument('-m', '--max', type=int, help='maximum number of URLs to scrape')
+    parser.add_argument('-m', '--max', type=int, help='maximum number of URLs to scrape, default is 50')
     args = parser.parse_args()
     print(args)
 
