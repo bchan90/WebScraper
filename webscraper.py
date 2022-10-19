@@ -18,7 +18,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from validate_email_address import validate_email
 
-def web_scraper(str_url, arg_t, arg_a, arg_m):
+def web_scraper(str_url, arg_t, arg_id, arg_a, arg_m):
     # Selenium Driver Set-up #
     service = Service(executable_path=GeckoDriverManager().install())
     options = Options()
@@ -62,11 +62,6 @@ def web_scraper(str_url, arg_t, arg_a, arg_m):
 
         soup = BeautifulSoup(response.text, 'lxml')
 
-        ## IF STATIC PAGE ##
-#        if tag:
-#            for t in soup.find_all(tag):
-#                if attr in t.attrs:
-#                    values.append(t.attrs[attr])
         ## IF DYNAMIC PAGE ##
         driver.get(url)
         try:
@@ -92,7 +87,6 @@ def web_scraper(str_url, arg_t, arg_a, arg_m):
             try:
                 elements = driver.find_elements(By.CLASS_NAME, arg_a)
                 for element in elements:
-                    print('class "client" found')
                     values.add(element.text)
             except:
                 pass
@@ -131,16 +125,17 @@ def email_validator(email_list):
 
 def main():
     ## implement argparser ##
-    parser = argparse.ArgumentParser(usage='./webscraper.py [-h] DOMAIN [-t TAG -a ATTR] [-m MAX]')
+    parser = argparse.ArgumentParser(usage='./webscraper.py [-h] DOMAIN [-t TAG] [-id ID] [-a ATTR] [-m MAX]')
     parser.add_argument('domain', help='specify the domain to be scraped', metavar='DOMAIN')
     tag_grp = parser.add_argument_group('tag option')
     tag_grp.add_argument('-t', '--tag', type=str, help='specify a tag to scrape')
+    tag_grp.add_argument('-id', type=str, help='specify a class ID to scrape')
     tag_grp.add_argument('-a', '--attr', type=str, help='specify a tag attribute to scrape')
     parser.add_argument('-m', '--max', type=int, help='maximum number of URLs to scrape, default is 50')
     args = parser.parse_args()
     print(args)
 
-    web_scraper(args.domain, args.tag, args.attr, args.max)
+    web_scraper(args.domain, args.tag, args.id, args.attr, args.max)
 
 ### BOILERPLATE ###
 if __name__ == "__main__":
