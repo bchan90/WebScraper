@@ -11,7 +11,7 @@ from selenium.webdriver.firefox.options import Options
 from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-from urllib.parse import urlsplit, urlparse
+from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 from collections import deque
 from bs4 import BeautifulSoup
@@ -35,6 +35,7 @@ def web_scraper(str_url, arg_t, arg_id, arg_a, arg_m):
     try:
         driver.get(original_url)
     except:
+        driver.quit()
         print(f'Error navigating to {original_url}. Please ensure the URL was entered correctly.')
         return
 
