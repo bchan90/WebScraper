@@ -11,7 +11,7 @@ from selenium.webdriver.firefox.options import Options
 from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urlparse
 from urllib.request import Request, urlopen
 from collections import deque
 from bs4 import BeautifulSoup
@@ -26,9 +26,19 @@ def web_scraper(str_url, arg_t, arg_id, arg_a, arg_m):
     driver = webdriver.Firefox(options=options, service=service)
 
     original_url = str_url
+    # validate url schema #
+    if not urlsplit(original_url)[0]:
+        original_url = 'http://' + original_url
+
     scrape_max = arg_m
 
-    unscraped = deque([original_url])
+    try:
+        driver.get(original_url)
+    except:
+        print(f'Error navigating to {original_url}. Please ensure the URL was entered correctly.')
+        return
+
+    unscraped = deque([driver.current_url])
     scraped = set()
     emails = set()
     values = set()
@@ -51,34 +61,41 @@ def web_scraper(str_url, arg_t, arg_id, arg_a, arg_m):
             path = url
 
         print(f'Crawling URL {url}')
-        try:
-            response = requests.get(url)
-        except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError):
-            print('Excpetion caught')
-            continue
+#        try:
+#            response = requests.get(url)
+#        except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError):
+#            print('Excpetion caught')
+#            continue
 
-        new_emails = set(re.findall(r'[\w.+-]+@[\w-]+\.[\w.-]+', response.text, re.I))
-        emails.update(new_emails)
-
-        soup = BeautifulSoup(response.text, 'lxml')
+#        new_emails = set(re.findall(r'[\w.+-]+@[\w-]+\.[\w.-]+', response.text, re.I))
+#        emails.update(new_emails)
 
         ## IF DYNAMIC PAGE ##
         driver.get(url)
+        soup = BeautifulSoup(driver.page_source, 'lxml')
+        
+        new_emails = set(re.findall(r'[\w.+-]+@[\w-]+\.[\w.-]+', driver.page_source, re.I))
+        emails.update(new_emails)
+
         try:
-            WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CLASS_NAME,arg_a)))
+            WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CLASS_NAME, arg_a)))
         except:
             pass
         finally:
             pass
-#        for element in driver.find_elements(By.TAG_NAME, tag):
-#            try:
-#                values.add(element.find_element(By.CLASS_NAME, attr).text)
-#            except:
-#                continue
+
         if arg_t:
             try:
                 elements = driver.find_elements(By.TAG_NAME, arg_t)
                 for element in elements:
+                    values.add(element.text)
+            except:
+                pass
+
+        if arg_id:
+            try:
+                elements = driver.find_elements(By.ID, arg_id)
+                for elements in elements:
                     values.add(element.text)
             except:
                 pass
