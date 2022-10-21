@@ -41,13 +41,13 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
     scraped = set()
     emails = set()
     values = set()
-    wait_time = 0
+    wait_time = arg_w
     scrape_max = arg_m
 
     if not arg_m:
         scrape_max = 50
     if not arg_w:
-        wait_time = arg_w
+        wait_time = 0
 
     while len(unscraped) and len(scraped) < scrape_max:
         # re-initalize elements #
@@ -107,9 +107,11 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
 
         if arg_a:
             try:
-                elements = driver.find_elements(By.CLASS_NAME, arg_a)
+#                elements = driver.find_elements(By.CLASS_NAME, arg_a)
+                elements = soup.find_all('span', {'class': 'client'})
                 for element in elements:
-                    values.add(element.text)
+#                    values.add(element.text)
+                    values.add(element.get_text())
             except:
                 pass
 
@@ -150,7 +152,7 @@ def main():
     ## implement argparser ##
     parser = argparse.ArgumentParser(usage='./webscraper.py [-h] DOMAIN [-e] [-t TAG] [-id ID] [-a ATTR] [-w WAIT] [-m MAX]')
     parser.add_argument('domain', help='specify the domain to be scraped', metavar='DOMAIN')
-    parser.add_argument('-e', '--email', help='scrape for emails, default is False', action='store_true'))
+    parser.add_argument('-e', '--email', help='scrape for emails, default is False', action='store_true')
     tag_grp = parser.add_argument_group('tag option')
     tag_grp.add_argument('-t', '--tag', type=str, help='specify a tag to scrape')
     tag_grp.add_argument('-id', type=str, help='specify a tag ID to scrape')
@@ -160,7 +162,7 @@ def main():
     args = parser.parse_args()
     print(args)
 
-    web_scraper(args.domain, args.e, args.tag, args.id, args.attr, args.w, args.max)
+    web_scraper(args.domain, args.email, args.tag, args.id, args.attr, args.wait, args.max)
 
 ### BOILERPLATE ###
 if __name__ == "__main__":
