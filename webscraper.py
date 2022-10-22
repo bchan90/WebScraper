@@ -12,7 +12,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import UnexpectedTagNameException
-from selenium.common.exceptions import TimeoutExceptions
+from selenium.common.exceptions import TimeoutException
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 from collections import deque
@@ -95,6 +95,8 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
                 pass
             except UnexpectedTagNameException:
                 print('unexpected tag name exception caught')
+                pass
+            except TimeoutException:
                 pass
             finally:
                 pass
