@@ -12,6 +12,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import UnexpectedTagNameException
+from selenium.common.exceptions import TimeoutExceptions
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 from collections import deque
