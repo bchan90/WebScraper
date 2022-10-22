@@ -3,7 +3,6 @@
 import sys
 import argparse
 import re
-#import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.service import Service
@@ -16,6 +15,7 @@ from urllib.request import Request, urlopen
 from collections import deque
 from bs4 import BeautifulSoup
 import pandas as pd
+import csv
 from validate_email_address import validate_email
 
 def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
@@ -146,57 +146,89 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
     if arg_a:
         col_names.append(f'Classes with name <{arg_a}>')
 
+    col_names = ['Email', f'Tags with <{arg_t}>', f'Tags with ID <{arg_id}>', f'Classes with name <{arg_a}>']
+    with open('scraped-data.csv', 'w', newline='') as csvfile:
+        thewriter = csv.DictWriter(csvfile, fieldnames=col_names)
+        thewriter.writeheader()
+
+    list_len = find_longest(emails, t_values, id_values, a_values)
+
+    for i in range(list_len - len(emails)):
+        emails.add('')
+    for i in range(list_len - len(t_values)):
+        t_values.add('')
+    for i in range(list_len - len(id_values)):
+        id_values.add('')
+    for i in range(list_len - len(a_values)):
+        a_values.add('')
+    
+    emails = list(emails)
+    t_values = list(t_values)
+    id_values = list(id_values)
+    a_values = list(a_values)
+
+    for i in range(len(emails)):
+        thewriter.writerow({col_names[0]:emails[i], col_names[1]:t_values[i], col_names[2]:id_values[i], col_names[3]:a_values[i]})
+
     # zip lists of requested data #
     # make all lists same len as longest list #
     # create function that takes lists as args and returns list(zip()) to row_data #
-    if arg_e and arg_t and arg_id and arg_a:
-        row_data = zip(emails, t_values, id_values, a_values)
-    elif arg_e and arg_t and arg_id:
-        row_data = zip(emails, t_values, id_values)
-    elif arg_e and arg_t and arg_a:
-        row_data = zip(emails, t_values, a_values)
-    elif arg_e and arg_id and arg_a:
-        row_data = zip(emails, id_values, a_values)
-    elif arg_t and arg_id and arg_a:
-        row_data = zip(t_values, id_values, a_values)
-    elif arg_e and arg_t:
-        row_data = zip(emails, t_values)
-    elif arg_e and arg_id:
-        row_data = zip(emails, id_values)
-    elif arg_e and arg_a:
-        row_data = zip(emails, a_values)
-    elif arg_t and arg_id:
-        row_data = zip(t_values, id_values)
-    elif arg_t and arg_a:
-        row_data = zip(t_values, a_values)
-    elif arg_id and arg_a:
-        row_data = zip(id_values, a_values)
-    elif arg_e:
-        row_data = emails
-    elif arg_t:
-        row_data = t_values
-    elif arg_id:
-        row_data = id_values
-    else:
-        row_data = a_values
+#    if arg_e and arg_t and arg_id and arg_a:
+#        row_data = zip(emails, t_values, id_values, a_values)
+#    elif arg_e and arg_t and arg_id:
+  #      row_data = zip(emails, t_values, id_values)
+#    elif arg_e and arg_t and arg_a:
+        #     row_data = zip(emails, t_values, a_values)
+   # elif arg_e and arg_id and arg_a:
+   #     row_data = zip(emails, id_values, a_values)
+   # elif arg_t and arg_id and arg_a:
+   #     row_data = zip(t_values, id_values, a_values)
+   # elif arg_e and arg_t:
+   #     row_data = zip(emails, t_values)
+   # elif arg_e and arg_id:
+   #     row_data = zip(emails, id_values)
+   # elif arg_e and arg_a:
+   #     row_data = zip(emails, a_values)
+   # elif arg_t and arg_id:
+   #     row_data = zip(t_values, id_values)
+   # elif arg_t and arg_a:
+   #     row_data = zip(t_values, a_values)
+   # elif arg_id and arg_a:
+   #     row_data = zip(id_values, a_values)
+   # elif arg_e:
+   #     row_data = emails
+   # elif arg_t:
+   #     row_data = t_values
+   # elif arg_id:
+   #     row_data = id_values
+   # else:
+   #     row_data = a_values
 
     # DELETE AFTER get_data() IS IMPLEMENTED #
-    row_data = list(row_data)
+#    row_data = list(row_data)
 
-    df = pd.DataFrame(row_data, columns=col_names)
-    df.to_csv('scraped-data.csv', index=False)
+ #   df = pd.DataFrame(row_data, columns=col_names)
+ #   df.to_csv('scraped-data.csv', index=False)
 
     
 #    df = pd.DataFrame(values, columns=['Requested values'])
 #    df.to_csv('values.csv', index=False)
 
-def get_data(*lists):
+def find_longest(*lists):
+    longest = 0
+    for l in lists:
+        if longest < len(l):
+            longest = len(l)
+    return longest
+
+
+#def get_data(*lists):
     # determine len of longest list #
     # iterate through lists passed in and make all same len #
     # zip() lists* #
 
-    data = list()
-    return data
+ #   data = list()
+  #  return data
 
 def email_validator(email_list):
     for e in email_list.copy():
