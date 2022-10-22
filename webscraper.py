@@ -128,7 +128,7 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
                 link = path + link
 
             if not link.endswith('.gz'):
-                if link.startswith(original_url):
+                if link.startswith(base_url):
                     if not link in unscraped and not link in scraped:
                         unscraped.append(link)
 
@@ -139,21 +139,16 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
 
     ## write to csv ##
     # define columns #
-    # make all sets same length #
     col_names=[]
     row_data=[]
     if arg_e:
         col_names.append('Email')
-        row_data.append(emails)
     if arg_t:
         col_names.append(f'Tags with <{arg_t}>')
-        row_data.append(t_values)
     if arg_id:
         col_names.append(f'Tags with ID <{arg_id}>')
-        row_data.append(id_values)
     if arg_a:
         col_names.append(f'Classes with name <{arg_a}>')
-        row_data.append(a_values)
 
     # zip lists of requested data #
     # make all lists same len as longest list #
@@ -189,18 +184,23 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
     else:
         row_data = a_values
 
-    print(emails)
-    print(a_values)
-    print(row_data)
+    # DELETE AFTER get_data() IS IMPLEMENTED #
     row_data = list(row_data)
-    print(row_data)
-    
+
     df = pd.DataFrame(row_data, columns=col_names)
     df.to_csv('scraped-data.csv', index=False)
 
     
 #    df = pd.DataFrame(values, columns=['Requested values'])
 #    df.to_csv('values.csv', index=False)
+
+def get_data(lists*):
+    # determine len of longest list #
+    # iterate through lists passed in and make all same len #
+    # zip() lists* #
+
+    data = list()
+    return data
 
 def email_validator(email_list):
     for e in email_list.copy():
