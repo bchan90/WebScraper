@@ -10,6 +10,8 @@ from selenium.webdriver.firefox.options import Options
 from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import UnexpectedTagNameException
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 from collections import deque
@@ -82,8 +84,16 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
         # need to modify to be more flexible #
         if arg_w:
             try:
-                WebDriverWait(driver, wait_time).until(EC.presence_of_element_located((By.CLASS_NAME, arg_a)))
-            except:
+#                WebDriverWait(driver, wait_time).until(EC.presence_of_element_located((By.CLASS_NAME, arg_a)))
+                WebDriverWait(driver, wait_time).until(EC.any_of(
+                    EC.presence_of_element_located((By.CLASS_NAME, arg_a)),
+                    EC.presence_of_element_located((By.TAG_NAME, arg_t)),
+                    EC.presence_of_element_located((By.ID, arg_id))))
+            except NoSuchElementException:
+                print('no such element exception caught')
+                pass
+            except UnexpectedTagNameException:
+                print('unexpected tag name exception caught')
                 pass
             finally:
                 pass
