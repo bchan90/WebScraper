@@ -3,7 +3,7 @@
 import sys
 import argparse
 import re
-import requests
+#import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.service import Service
@@ -72,10 +72,6 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
 #            print('Excpetion caught')
 #            continue
 
-#        new_emails = set(re.findall(r'[\w.+-]+@[\w-]+\.[\w.-]+', response.text, re.I))
-#        emails.update(new_emails)
-
-        ## IF DYNAMIC PAGE ##
         driver.get(url)
         soup = BeautifulSoup(driver.page_source, 'lxml')
         
@@ -194,7 +190,7 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
 #    df = pd.DataFrame(values, columns=['Requested values'])
 #    df.to_csv('values.csv', index=False)
 
-def get_data(lists*):
+def get_data(*lists):
     # determine len of longest list #
     # iterate through lists passed in and make all same len #
     # zip() lists* #
