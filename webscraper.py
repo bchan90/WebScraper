@@ -146,29 +146,28 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
     if arg_a:
         col_names.append(f'Classes with name <{arg_a}>')
 
-    col_names = ['Email', f'Tags with <{arg_t}>', f'Tags with ID <{arg_id}>', f'Classes with name <{arg_a}>']
-    with open('scraped-data.csv', 'w', newline='') as csvfile:
-        thewriter = csv.DictWriter(csvfile, fieldnames=col_names)
-        thewriter.writeheader()
-
     list_len = find_longest(emails, t_values, id_values, a_values)
 
-    for i in range(list_len - len(emails)):
-        emails.add('')
-    for i in range(list_len - len(t_values)):
-        t_values.add('')
-    for i in range(list_len - len(id_values)):
-        id_values.add('')
-    for i in range(list_len - len(a_values)):
-        a_values.add('')
-    
     emails = list(emails)
     t_values = list(t_values)
     id_values = list(id_values)
     a_values = list(a_values)
 
-    for i in range(len(emails)):
-        thewriter.writerow({col_names[0]:emails[i], col_names[1]:t_values[i], col_names[2]:id_values[i], col_names[3]:a_values[i]})
+    for i in range(list_len - len(emails)):
+        emails.append('')
+    for i in range(list_len - len(t_values)):
+        t_values.append('')
+    for i in range(list_len - len(id_values)):
+        id_values.append('')
+    for i in range(list_len - len(a_values)):
+        a_values.append('')
+
+    with open('scraped-data.csv', 'w', newline='') as csvfile:
+        thewriter = csv.DictWriter(csvfile, fieldnames=col_names)
+        thewriter.writeheader()
+    
+        for i in range(len(emails)):
+            thewriter.writerow({col_names[0]:emails[i], col_names[1]:t_values[i], col_names[2]:id_values[i], col_names[3]:a_values[i]})
 
     # zip lists of requested data #
     # make all lists same len as longest list #
