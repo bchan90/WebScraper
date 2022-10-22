@@ -40,7 +40,9 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
     unscraped = deque([driver.current_url])
     scraped = set()
     emails = set()
-    values = set()
+    t_values = set()
+    id_values = set()
+    a_values = set()
     wait_time = arg_w
     scrape_max = arg_m
 
@@ -81,9 +83,10 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
             new_emails = set(re.findall(r'[\w.+-]+@[\w-]+\.[\w.-]+', driver.page_source, re.I))
             emails.update(new_emails)
 
+        # need to modify to be more flexible #
         if arg_w:
             try:
-                WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CLASS_NAME, arg_a)))
+                WebDriverWait(driver, wait_time).until(EC.presence_of_element_located((By.CLASS_NAME, arg_a)))
             except:
                 pass
             finally:
@@ -93,25 +96,23 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
             try:
                 elements = driver.find_elements(By.TAG_NAME, arg_t)
                 for element in elements:
-                    values.add(element.text)
+                    t_values.add(element.text)
             except:
                 pass
 
         if arg_id:
             try:
                 elements = driver.find_elements(By.ID, arg_id)
-                for elements in elements:
-                    values.add(element.text)
+                for element in elements:
+                    id_values.add(element.text)
             except:
                 pass
 
         if arg_a:
             try:
-#                elements = driver.find_elements(By.CLASS_NAME, arg_a)
-                elements = soup.find_all('span', {'class': 'client'})
+                elements = driver.find_elements(By.CLASS_NAME, arg_a)
                 for element in elements:
-#                    values.add(element.text)
-                    values.add(element.get_text())
+                    a_values.add(element.text)
             except:
                 pass
 
@@ -134,10 +135,72 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
     driver.quit()
 
     if arg_e:
-        email_validator(emails)
+        emails = email_validator(emails)
 
-    df = pd.DataFrame(values, columns=['Requested values'])
-    df.to_csv('values.csv', index=False)
+    ## write to csv ##
+    # define columns #
+    # make all sets same length #
+    col_names=[]
+    row_data=[]
+    if arg_e:
+        col_names.append('Email')
+        row_data.append(emails)
+    if arg_t:
+        col_names.append(f'Tags with <{arg_t}>')
+        row_data.append(t_values)
+    if arg_id:
+        col_names.append(f'Tags with ID <{arg_id}>')
+        row_data.append(id_values)
+    if arg_a:
+        col_names.append(f'Classes with name <{arg_a}>')
+        row_data.append(a_values)
+
+    # zip lists of requested data #
+    # make all lists same len as longest list #
+    # create function that takes lists as args and returns list(zip()) to row_data #
+    if arg_e and arg_t and arg_id and arg_a:
+        row_data = zip(emails, t_values, id_values, a_values)
+    elif arg_e and arg_t and arg_id:
+        row_data = zip(emails, t_values, id_values)
+    elif arg_e and arg_t and arg_a:
+        row_data = zip(emails, t_values, a_values)
+    elif arg_e and arg_id and arg_a:
+        row_data = zip(emails, id_values, a_values)
+    elif arg_t and arg_id and arg_a:
+        row_data = zip(t_values, id_values, a_values)
+    elif arg_e and arg_t:
+        row_data = zip(emails, t_values)
+    elif arg_e and arg_id:
+        row_data = zip(emails, id_values)
+    elif arg_e and arg_a:
+        row_data = zip(emails, a_values)
+    elif arg_t and arg_id:
+        row_data = zip(t_values, id_values)
+    elif arg_t and arg_a:
+        row_data = zip(t_values, a_values)
+    elif arg_id and arg_a:
+        row_data = zip(id_values, a_values)
+    elif arg_e:
+        row_data = emails
+    elif arg_t:
+        row_data = t_values
+    elif arg_id:
+        row_data = id_values
+    else:
+        row_data = a_values
+
+    print(emails)
+    print(a_values)
+    print(row_data)
+    row_data = list(row_data)
+    print(row_data)
+    
+    df = pd.DataFrame(row_data, columns=col_names)
+    df.to_csv('scraped-data.csv', index=False)
+
+    
+#    df = pd.DataFrame(values, columns=['Requested values'])
+#    df.to_csv('values.csv', index=False)
 
 def email_validator(email_list):
     for e in email_list.copy():
@@ -145,24 +208,26 @@ def email_validator(email_list):
             print(f'Email {e} is not valid. Removing from list')
             email_list.remove(e)
 
-    df = pd.DataFrame(email_list, columns=['Email'])
-    df.to_csv('email.csv', index=False)
+    return email_list
+
+#    df = pd.DataFrame(email_list, columns=['Email'])
+#    df.to_csv('email.csv', index=False)
 
 def main():
     ## implement argparser ##
     parser = argparse.ArgumentParser(usage='./webscraper.py [-h] DOMAIN [-e] [-t TAG] [-id ID] [-a ATTR] [-w WAIT] [-m MAX]')
     parser.add_argument('domain', help='specify the domain to be scraped', metavar='DOMAIN')
-    parser.add_argument('-e', '--email', help='scrape for emails, default is False', action='store_true')
+    parser.add_argument('-e', '--noemail', help='scrape for emails, default is True', action='store_false')
     tag_grp = parser.add_argument_group('tag option')
     tag_grp.add_argument('-t', '--tag', type=str, help='specify a tag to scrape')
     tag_grp.add_argument('-id', type=str, help='specify a tag ID to scrape')
     tag_grp.add_argument('-a', '--attr', type=str, help='specify a class name to scrape')
-    parser.add_argument('-w', '--wait', help='time to allow scripts to load before scraping, default is 0')
+    parser.add_argument('-w', '--wait', type=int, help='time to allow scripts to load before scraping, default is 0')
     parser.add_argument('-m', '--max', type=int, help='maximum number of URLs to scrape, default is 50')
     args = parser.parse_args()
     print(args)
 
-    web_scraper(args.domain, args.email, args.tag, args.id, args.attr, args.wait, args.max)
+    web_scraper(args.domain, args.noemail, args.tag, args.id, args.attr, args.wait, args.max)
 
 ### BOILERPLATE ###
 if __name__ == "__main__":
