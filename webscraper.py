@@ -146,7 +146,10 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
     if arg_a:
         col_names.append(f'Classes with name <{arg_a}>')
 
+    col_names = ['Email', f'Tags with <{arg_t}>', f'Tags with ID <{arg_id}>', f'Classes with name <{arg_a}>']
+    
     list_len = find_longest(emails, t_values, id_values, a_values)
+    print(list_len)
 
     emails = list(emails)
     t_values = list(t_values)
@@ -161,12 +164,16 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
         id_values.append('')
     for i in range(list_len - len(a_values)):
         a_values.append('')
+    
+    print(f'{len(emails)}, {len(t_values)}, {len(id_values)}, {len(a_values)}')
+    print(range(len(emails)))
 
     with open('scraped-data.csv', 'w', newline='') as csvfile:
         thewriter = csv.DictWriter(csvfile, fieldnames=col_names)
         thewriter.writeheader()
     
         for i in range(len(emails)):
+            print(i)
             thewriter.writerow({col_names[0]:emails[i], col_names[1]:t_values[i], col_names[2]:id_values[i], col_names[3]:a_values[i]})
 
     # zip lists of requested data #
