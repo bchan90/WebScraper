@@ -191,7 +191,7 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
         col_names.append(k.title())
 
     # write to file #
-    with open('scraped-data.csv', 'w') as csvfile:
+    with open('scraped-data.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(col_names)
 
