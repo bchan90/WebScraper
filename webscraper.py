@@ -19,6 +19,7 @@ from collections import deque
 from bs4 import BeautifulSoup
 import pandas as pd
 import csv
+from itertools import zip_longest
 from validate_email_address import validate_email
 
 def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
@@ -42,10 +43,24 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
 
     unscraped = deque([driver.current_url])
     scraped = set()
-    emails = set()
-    t_values = set()
-    id_values = set()
-    a_values = set()
+
+    data = {}
+    if arg_e:
+        data['email'] = set()
+    if arg_t:
+        for t in arg_t:
+            data[t] = set()
+    if arg_id:
+        for i in arg_id:
+            data[i] = set()
+    if arg_a:
+        for a in arg_a:
+            data[a] = set()
+
+#    emails = set()
+#    t_values = set()
+#    id_values = set()
+#    a_values = set()
     wait_time = arg_w
     scrape_max = arg_m
 
@@ -80,7 +95,8 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
         
         if arg_e:
             new_emails = set(re.findall(r'[\w.+-]+@[\w-]+\.[\w.-]+', driver.page_source, re.I))
-            emails.update(new_emails)
+#            emails.update(new_emails)
+            data['email'].update(new_emails)
 
         # need to modify to be more flexible #
         if arg_w:
@@ -103,25 +119,28 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
 
         if arg_t:
             try:
-                elements = driver.find_elements(By.TAG_NAME, arg_t)
-                for element in elements:
-                    t_values.add(element.text)
+                for t in arg_t:
+                    elements = driver.find_elements(By.TAG_NAME, t)
+                    for element in elements:
+                        data[t].add(element.text)
             except:
                 pass
 
         if arg_id:
             try:
-                elements = driver.find_elements(By.ID, arg_id)
-                for element in elements:
-                    id_values.add(element.text)
+                for i in arg_id:
+                    elements = driver.find_elements(By.ID, i)
+                    for element in elements:
+                        data[i].add(element.text)
             except:
                 pass
 
         if arg_a:
             try:
-                elements = driver.find_elements(By.CLASS_NAME, arg_a)
-                for element in elements:
-                    a_values.add(element.text)
+                for a in arg_a:
+                    elements = driver.find_elements(By.CLASS_NAME, a)
+                    for element in elements:
+                        data[a].add(element.text)
             except:
                 pass
 
@@ -144,110 +163,23 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
     driver.quit()
 
     if arg_e:
-        emails = email_validator(emails)
+        email_validator(data['email'])
 
     ## write to csv ##
     # define columns #
     col_names=[]
-    row_data=[]
-    if arg_e:
-        col_names.append('Email')
-    if arg_t:
-        col_names.append(f'Tags with <{arg_t}>')
-    if arg_id:
-        col_names.append(f'Tags with ID <{arg_id}>')
-    if arg_a:
-        col_names.append(f'Classes with name <{arg_a}>')
+    for k in data.keys():
+        col_names.append(k.title())
 
-    col_names = ['Email', f'Tags with <{arg_t}>', f'Tags with ID <{arg_id}>', f'Classes with name <{arg_a}>']
-    
-    list_len = find_longest(emails, t_values, id_values, a_values)
-    print(list_len)
+    # write to file #
+    with open('scraped-data.csv', 'w') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(col_names)
 
-    emails = list(emails)
-    t_values = list(t_values)
-    id_values = list(id_values)
-    a_values = list(a_values)
+        for vals in zip_longest(*data.values()):
+            row = vals
+            writer.writerow(row)
 
-    for i in range(list_len - len(emails)):
-        emails.append('')
-    for i in range(list_len - len(t_values)):
-        t_values.append('')
-    for i in range(list_len - len(id_values)):
-        id_values.append('')
-    for i in range(list_len - len(a_values)):
-        a_values.append('')
-    
-    print(f'{len(emails)}, {len(t_values)}, {len(id_values)}, {len(a_values)}')
-    print(range(len(emails)))
-
-    with open('scraped-data.csv', 'w', newline='') as csvfile:
-        thewriter = csv.DictWriter(csvfile, fieldnames=col_names)
-        thewriter.writeheader()
-    
-        for i in range(len(emails)):
-            print(i)
-            thewriter.writerow({col_names[0]:emails[i], col_names[1]:t_values[i], col_names[2]:id_values[i], col_names[3]:a_values[i]})
-
-    # zip lists of requested data #
-    # make all lists same len as longest list #
-    # create function that takes lists as args and returns list(zip()) to row_data #
-#    if arg_e and arg_t and arg_id and arg_a:
-#        row_data = zip(emails, t_values, id_values, a_values)
-#    elif arg_e and arg_t and arg_id:
-  #      row_data = zip(emails, t_values, id_values)
-#    elif arg_e and arg_t and arg_a:
-        #     row_data = zip(emails, t_values, a_values)
-   # elif arg_e and arg_id and arg_a:
-   #     row_data = zip(emails, id_values, a_values)
-   # elif arg_t and arg_id and arg_a:
-   #     row_data = zip(t_values, id_values, a_values)
-   # elif arg_e and arg_t:
-   #     row_data = zip(emails, t_values)
-   # elif arg_e and arg_id:
-   #     row_data = zip(emails, id_values)
-   # elif arg_e and arg_a:
-   #     row_data = zip(emails, a_values)
-   # elif arg_t and arg_id:
-   #     row_data = zip(t_values, id_values)
-   # elif arg_t and arg_a:
-   #     row_data = zip(t_values, a_values)
-   # elif arg_id and arg_a:
-   #     row_data = zip(id_values, a_values)
-   # elif arg_e:
-   #     row_data = emails
-   # elif arg_t:
-   #     row_data = t_values
-   # elif arg_id:
-   #     row_data = id_values
-   # else:
-   #     row_data = a_values
-
-    # DELETE AFTER get_data() IS IMPLEMENTED #
-#    row_data = list(row_data)
-
- #   df = pd.DataFrame(row_data, columns=col_names)
- #   df.to_csv('scraped-data.csv', index=False)
-
-    
-#    df = pd.DataFrame(values, columns=['Requested values'])
-#    df.to_csv('values.csv', index=False)
-
-def find_longest(*lists):
-    longest = 0
-    for l in lists:
-        if longest < len(l):
-            longest = len(l)
-    return longest
-
-
-#def get_data(*lists):
-    # determine len of longest list #
-    # iterate through lists passed in and make all same len #
-    # zip() lists* #
-
- #   data = list()
-  #  return data
 
 def email_validator(email_list):
     for e in email_list.copy():
@@ -257,8 +189,6 @@ def email_validator(email_list):
 
     return email_list
 
-#    df = pd.DataFrame(email_list, columns=['Email'])
-#    df.to_csv('email.csv', index=False)
 
 def main():
     ## implement argparser ##
@@ -266,9 +196,9 @@ def main():
     parser.add_argument('domain', help='specify the domain to be scraped', metavar='DOMAIN')
     parser.add_argument('-e', '--noemail', help='scrape for emails, default is True', action='store_false')
     tag_grp = parser.add_argument_group('tag option')
-    tag_grp.add_argument('-t', '--tag', type=str, help='specify a tag to scrape')
-    tag_grp.add_argument('-id', type=str, help='specify a tag ID to scrape')
-    tag_grp.add_argument('-a', '--attr', type=str, help='specify a class name to scrape')
+    tag_grp.add_argument('-t', '--tag', type=str, action='append', help='specify a tag to scrape')
+    tag_grp.add_argument('-id', type=str, action='append', help='specify a tag ID to scrape')
+    tag_grp.add_argument('-a', '--attr', type=str, action='append', help='specify a class name to scrape')
     parser.add_argument('-w', '--wait', type=int, help='time to allow scripts to load before scraping, default is 0')
     parser.add_argument('-m', '--max', type=int, help='maximum number of URLs to scrape, default is 50')
     args = parser.parse_args()
