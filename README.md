@@ -9,6 +9,7 @@ There are several modules that need to be installed prior to running the webscra
 pip install -U selenium
 ```
 Make sure the '-U' flag is included as the latest version may not be installed and is necessary for WebScraper to run properly.
+
 [PyPi Selenium](https://pypi.org/project/selenium/)
 #### BeautifulSoup4
 ```
