@@ -29,6 +29,11 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
     options.add_argument('--headless')
     driver = webdriver.Firefox(options=options, service=service)
 
+    # Create lists for Expected Conditions #
+    exp_cond_t = []
+    exp_cond_id = []
+    exp_cond_a = []
+
     original_url = str_url
     # validate url schema #
     if not urlsplit(original_url)[0]:
@@ -44,6 +49,7 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
     unscraped = deque([driver.current_url])
     scraped = set()
 
+    # create dictionary with values containing sets #
     data = {}
     if arg_e:
         data['email'] = set()
@@ -57,10 +63,6 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
         for a in arg_a:
             data[a] = set()
 
-#    emails = set()
-#    t_values = set()
-#    id_values = set()
-#    a_values = set()
     wait_time = arg_w
     scrape_max = arg_m
 
@@ -84,28 +86,40 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
             path = url
 
         print(f'Crawling URL {url}')
-#        try:
-#            response = requests.get(url)
-#        except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError):
-#            print('Excpetion caught')
-#            continue
 
         driver.get(url)
         soup = BeautifulSoup(driver.page_source, 'lxml')
-        
-        if arg_e:
-            new_emails = set(re.findall(r'[\w.+-]+@[\w-]+\.[\w.-]+', driver.page_source, re.I))
-#            emails.update(new_emails)
-            data['email'].update(new_emails)
 
-        # need to modify to be more flexible #
         if arg_w:
             try:
-#                WebDriverWait(driver, wait_time).until(EC.presence_of_element_located((By.CLASS_NAME, arg_a)))
-                WebDriverWait(driver, wait_time).until(EC.any_of(
-                    EC.presence_of_element_located((By.CLASS_NAME, arg_a)),
-                    EC.presence_of_element_located((By.TAG_NAME, arg_t)),
-                    EC.presence_of_element_located((By.ID, arg_id))))
+                if arg_t:
+                    for t in arg_t:
+                        exp_cond_t.append(EC.presence_of_element_located((By.TAG_NAME, t)))
+                if arg_id:
+                    for i in arg_id:
+                        exp_cond_id.append(EC.presence_of_element_located((By.ID, i)))
+                if arg_a:
+                    for a in arg_a:
+                        exp_cond_a.append(EC.presence_of_element_located((By.CLASS_NAME, a)))
+                wait = WebDriverWait(driver, wait_time)
+                wait.until(EC.any_of(
+                    *exp_cond_t,
+                    *exp_cond_id,
+                    *exp_cond_a))
+                if arg_a and arg_t and arg_id:
+                    wait.until(EC.any_of(*exp_cond_t, *exp_cond_id, *exp_cond_a))
+                elif arg_a and arg_t:
+                    wait.until(EC.any_of(*exp_cond_t, *exp_cond_a))
+                elif arg_a and arg_id:
+                    wait.until(EC.any_of(*exp_cond_id, *exp_cond_a))
+                elif arg_t and arg_id:
+                    wait.until(EC.any_of(*exp_cond_t, *exp_cond_id))
+                elif arg_a:
+                    wait.until(EC.any_of(*exp_cond_a))
+                elif arg_t:
+                    wait.until(EC.any_of(*exp_cond_t))
+                else:
+                    wait.until(EC.any_of(*exp_cond_id))
             except NoSuchElementException:
                 print('no such element exception caught')
                 pass
@@ -113,9 +127,14 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
                 print('unexpected tag name exception caught')
                 pass
             except TimeoutException:
+                print('timeout exception caught')
                 pass
             finally:
                 pass
+        
+        if arg_e:
+            new_emails = set(re.findall(r'[\w.+-]+@[\w-]+\.[\w.-]+', driver.page_source, re.I))
+            data['email'].update(new_emails)
 
         if arg_t:
             try:
