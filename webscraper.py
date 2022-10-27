@@ -39,10 +39,8 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m, arg_o):
     options.add_argument('--headless')
     driver = webdriver.Firefox(options=options, service=service)
 
-    # Create lists for Expected Conditions #
-    exp_cond_t = []
-    exp_cond_id = []
-    exp_cond_a = []
+    # Create list for Expected Conditions #
+    ec_list = []
 
     original_url = str_url
     # validate url schema #
@@ -104,18 +102,15 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m, arg_o):
             try:
                 if arg_t:
                     for t in arg_t:
-                        exp_cond_t.append(EC.presence_of_element_located((By.TAG_NAME, t)))
+                        ec_list.append(EC.presence_of_element_located((By.TAG_NAME, t)))
                 if arg_id:
                     for i in arg_id:
-                        exp_cond_id.append(EC.presence_of_element_located((By.ID, i)))
+                        ec_list.append(EC.presence_of_element_located((By.ID, i)))
                 if arg_a:
                     for a in arg_a:
-                        exp_cond_a.append(EC.presence_of_element_located((By.CLASS_NAME, a)))
+                        ec_list.append(EC.presence_of_element_located((By.CLASS_NAME, a)))
                 wait = WebDriverWait(driver, wait_time)
-                wait.until(EC.any_of(
-                    *exp_cond_t,
-                    *exp_cond_id,
-                    *exp_cond_a))
+                wait.until(EC.any_of(*ec_list))
             except NoSuchElementException:
                 print('no such element exception caught')
                 pass
