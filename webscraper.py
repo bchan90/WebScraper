@@ -30,8 +30,9 @@ from validate_email_address import validate_email
 # @param {list} arg_a - class names to scrape
 # @param {int} arg_w - maximum time to wait for page to load elements
 # @param {int} arg_m - maximum number pages to scrape
+# @param {str} arg_o - filename to write results to
 ###
-def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
+def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m, arg_o):
     # Selenium Driver Set-up #
     service = Service(executable_path=GeckoDriverManager().install())
     options = Options()
@@ -115,20 +116,6 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
                     *exp_cond_t,
                     *exp_cond_id,
                     *exp_cond_a))
-                if arg_a and arg_t and arg_id:
-                    wait.until(EC.any_of(*exp_cond_t, *exp_cond_id, *exp_cond_a))
-                elif arg_a and arg_t:
-                    wait.until(EC.any_of(*exp_cond_t, *exp_cond_a))
-                elif arg_a and arg_id:
-                    wait.until(EC.any_of(*exp_cond_id, *exp_cond_a))
-                elif arg_t and arg_id:
-                    wait.until(EC.any_of(*exp_cond_t, *exp_cond_id))
-                elif arg_a:
-                    wait.until(EC.any_of(*exp_cond_a))
-                elif arg_t:
-                    wait.until(EC.any_of(*exp_cond_t))
-                else:
-                    wait.until(EC.any_of(*exp_cond_id))
             except NoSuchElementException:
                 print('no such element exception caught')
                 pass
@@ -195,11 +182,14 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
 
     ## write to csv ##
     # define columns #
+    filename = 'scraped-data.csv'
+    if arg_o:
+        filename = arg_o
     col_names=[]
     for k in data.keys():
         col_names.append(k.title())
 
-    with open('scraped-data.csv', 'w', newline='') as csvfile:
+    with open(filename, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(col_names)
 
@@ -233,10 +223,11 @@ def main():
     tag_grp.add_argument('-a', '--attr', type=str, action='append', help='specify a class name to scrape')
     parser.add_argument('-w', '--wait', type=int, help='time to allow scripts to load before scraping, default is 0')
     parser.add_argument('-m', '--max', type=int, help='maximum number of URLs to scrape')
+    parser.add_argument('-o', '--outfile', type=str, help='specify a filename to write results to, default is "scraped-data.csv"')
     args = parser.parse_args()
     print(args)
 
-    web_scraper(args.domain, args.noemail, args.tag, args.id, args.attr, args.wait, args.max)
+    web_scraper(args.domain, args.noemail, args.tag, args.id, args.attr, args.wait, args.max, args.outfile)
 
 ### BOILERPLATE ###
 if __name__ == "__main__":
