@@ -21,11 +21,6 @@ pip install webdriver-manager
 pip install beautifulsoup4
 ```
 [PyPi BeautifulSoup4](https://pypi.org/project/beautifulsoup4/)
-#### Pandas
-```
-pip install pandas
-```
-[Pandas Project](https://pandas.pydata.org/)
 #### validate-email-address
 ```
 pip install validate-email-address
