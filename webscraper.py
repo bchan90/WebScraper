@@ -14,14 +14,23 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import UnexpectedTagNameException
 from selenium.common.exceptions import TimeoutException
 from urllib.parse import urlsplit
-from urllib.request import Request, urlopen
 from collections import deque
 from bs4 import BeautifulSoup
-import pandas as pd
 import csv
 from itertools import zip_longest
 from validate_email_address import validate_email
 
+###
+# crawl through pages searching for elements
+#
+# @oaram {str} str_url - initial URL
+# @param {bool} arg_e - switch for scraping emails
+# @param {list} arg_t - tag names to scrape
+# @param {list} arg_id - class ID's to scrape
+# @param {list} arg_a - class names to scrape
+# @param {int} arg_w - maximum time to wait for page to load elements
+# @param {int} arg_m - maximum number pages to scrape
+###
 def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
     # Selenium Driver Set-up #
     service = Service(executable_path=GeckoDriverManager().install())
@@ -190,7 +199,6 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
     for k in data.keys():
         col_names.append(k.title())
 
-    # write to file #
     with open('scraped-data.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(col_names)
@@ -200,6 +208,11 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
             writer.writerow(row)
 
 
+###
+# check list of emails to see if SMTP server can be reached
+#
+# @param {list/set} email_list
+###
 def email_validator(email_list):
     for e in email_list.copy():
         if not validate_email(e, verify=True):

@@ -11,6 +11,11 @@ pip install -U selenium
 Make sure the ```-U``` flag is included as the latest version may not be installed and is necessary for WebScraper to run properly.
 
 [PyPi Selenium](https://pypi.org/project/selenium/)
+#### Webdriver Manager for Python
+```
+pip install webdriver-manager
+```
+[Webdriver Manager for Python Github](https://github.com/SergeyPirogov/webdriver_manager)
 #### BeautifulSoup4
 ```
 pip install beautifulsoup4

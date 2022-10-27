@@ -1,5 +1,6 @@
 # Script Output Files
 scraped-data.csv
+geckodriver.log
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
