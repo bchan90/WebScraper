@@ -72,15 +72,15 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m):
         for a in arg_a:
             data[a] = set()
 
-    wait_time = arg_w
-    scrape_max = arg_m
+    wait_time = 0
+    scrape_max = 0
 
-    if not arg_m:
-        scrape_max = 50
-    if not arg_w:
-        wait_time = 0
+    if arg_w:
+        wait_time = arg_w
+    if arg_m:
+        scrape_max = arg_m
 
-    while len(unscraped) and len(scraped) < scrape_max:
+    while len(unscraped) and (scrape_max == 0 or len(scraped) < scrape_max):
         # re-initalize elements #
         elements = ()
         url = unscraped.popleft()
@@ -232,7 +232,7 @@ def main():
     tag_grp.add_argument('-id', type=str, action='append', help='specify a tag ID to scrape')
     tag_grp.add_argument('-a', '--attr', type=str, action='append', help='specify a class name to scrape')
     parser.add_argument('-w', '--wait', type=int, help='time to allow scripts to load before scraping, default is 0')
-    parser.add_argument('-m', '--max', type=int, help='maximum number of URLs to scrape, default is 50')
+    parser.add_argument('-m', '--max', type=int, help='maximum number of URLs to scrape')
     args = parser.parse_args()
     print(args)
 

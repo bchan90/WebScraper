@@ -36,7 +36,7 @@ There are additional options that can be specified such as:
 * -id: allows for the user to specify a specific class ID name to scrape for.
 * -a or --attr: allows for the user to specify a specific class name to scrape for.
 * -w or --wait: allows for the user to specify the maximum amount of time to wait (in seconds) to allow certain page elements to load (default is 0).
-* -m or --max: allows for the user to specify the maximum number of domains to scrape (default is 50).
+* -m or --max: allows for the user to specify the maximum number of domains to scrape.
 
 Note: the ```-t```, ```-id```, and ```-a``` arguments may be specified multiple times to look for more than one of those elements.
 Examples of how to use these arguments can be found below.
@@ -49,7 +49,7 @@ To execute the script in Linux in its most basic form:
 ```
 ./webscraper.py example.com
 ```
-This will scrape example.com and any linked pages (up to 50) for email addresses.
+This will scrape example.com and any linked pages for email addresses.
 ```
 ./webscraper.py example.com -e -m 20
 ```
