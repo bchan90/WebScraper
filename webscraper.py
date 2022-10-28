@@ -23,7 +23,7 @@ from validate_email_address import validate_email
 ###
 # crawl through pages searching for elements
 #
-# @oaram {str} str_url - initial URL
+# @param {str} str_url - initial URL
 # @param {bool} arg_e - switch for scraping emails
 # @param {list} arg_t - tag names to scrape
 # @param {list} arg_id - class ID's to scrape
@@ -209,7 +209,7 @@ def email_validator(email_list):
 
 def main():
     ## implement argparser ##
-    parser = argparse.ArgumentParser(usage='./webscraper.py [-h] DOMAIN [-e] [-t TAG] [-id ID] [-a ATTR] [-w WAIT] [-m MAX]')
+    parser = argparse.ArgumentParser(usage='./webscraper.py [-h] DOMAIN [-e] [-t TAG] [-id ID] [-a ATTR] [-w WAIT] [-m MAX] [-o OUTFILE]')
     parser.add_argument('domain', help='specify the domain to be scraped', metavar='DOMAIN')
     parser.add_argument('-e', '--noemail', help='scrape for emails, default is True', action='store_false')
     tag_grp = parser.add_argument_group('tag option')
