@@ -25,14 +25,15 @@ from validate_email_address import validate_email
 #
 # @param {str} str_url - initial URL
 # @param {bool} arg_e - switch for scraping emails
+# @param {bool} arg_nv - switch for validating email list
 # @param {list} arg_t - tag names to scrape
 # @param {list} arg_id - class ID's to scrape
-# @param {list} arg_a - class names to scrape
+# @param {list} arg_c - class names to scrape
 # @param {int} arg_w - maximum time to wait for page to load elements
 # @param {int} arg_m - maximum number pages to scrape
 # @param {str} arg_o - filename to write results to
 ###
-def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m, arg_o):
+def web_scraper(str_url, arg_e, arg_nv, arg_t, arg_id, arg_c, arg_w, arg_m, arg_o):
     # Selenium Driver Set-up #
     service = Service(executable_path=GeckoDriverManager().install())
     options = Options()
@@ -69,9 +70,9 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m, arg_o):
     if arg_id:
         for i in arg_id:
             data[i] = set()
-    if arg_a:
-        for a in arg_a:
-            data[a] = set()
+    if arg_c:
+        for c in arg_c:
+            data[c] = set()
 
     wait_time = 0
     scrape_max = 0
@@ -110,9 +111,9 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m, arg_o):
                 if arg_id:
                     for i in arg_id:
                         ec_list.append(EC.presence_of_element_located((By.ID, i)))
-                if arg_a:
-                    for a in arg_a:
-                        ec_list.append(EC.presence_of_element_located((By.CLASS_NAME, a)))
+                if arg_c:
+                    for c in arg_c:
+                        ec_list.append(EC.presence_of_element_located((By.CLASS_NAME, c)))
                 wait = WebDriverWait(driver, wait_time)
                 wait.until(EC.any_of(*ec_list))
             except NoSuchElementException:
@@ -150,12 +151,12 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m, arg_o):
             except:
                 pass
 
-        if arg_a:
+        if arg_c:
             try:
-                for a in arg_a:
-                    elements = driver.find_elements(By.CLASS_NAME, a)
+                for c in arg_c:
+                    elements = driver.find_elements(By.CLASS_NAME, c)
                     for element in elements:
-                        data[a].add(element.text)
+                        data[c].add(element.text)
             except:
                 pass
 
@@ -179,7 +180,7 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m, arg_o):
     # Close Selenium browser #
     driver.quit()
 
-    if arg_e:
+    if arg_e and arg_nv:
         email_validator(data['email'])
 
     ## write to csv ##
@@ -216,20 +217,21 @@ def email_validator(email_list):
 
 def main():
     ## implement argparser ##
-    parser = argparse.ArgumentParser(usage='./webscraper.py [-h] DOMAIN [-e] [-t TAG] [-id ID] [-a ATTR] [-w WAIT] [-m MAX] [-o OUTFILE]')
+    parser = argparse.ArgumentParser(usage='./webscraper.py [-h] DOMAIN [-e] [-t TAG] [-id ID] [-c CLASSNAME] [-w WAIT] [-m MAX] [-o OUTFILE]')
     parser.add_argument('domain', help='specify the domain to be scraped', metavar='DOMAIN')
     parser.add_argument('-e', '--noemail', help='scrape for emails, default is True', action='store_false')
+    parser.add_argument('-nv', '--novalidate', help='do not validate email list', action='store_false')
     tag_grp = parser.add_argument_group('tag option')
     tag_grp.add_argument('-t', '--tag', type=str, action='append', help='specify a tag to scrape')
     tag_grp.add_argument('-id', type=str, action='append', help='specify a tag ID to scrape')
-    tag_grp.add_argument('-a', '--attr', type=str, action='append', help='specify a class name to scrape')
+    tag_grp.add_argument('-c', '--classname', type=str, action='append', help='specify a class name to scrape')
     parser.add_argument('-w', '--wait', type=int, help='time to allow scripts to load before scraping, default is 0')
     parser.add_argument('-m', '--max', type=int, help='maximum number of URLs to scrape')
     parser.add_argument('-o', '--outfile', type=str, help='specify a filename to write results to, default is "scraped-data.csv"')
     args = parser.parse_args()
     print(args)
 
-    web_scraper(args.domain, args.noemail, args.tag, args.id, args.attr, args.wait, args.max, args.outfile)
+    web_scraper(args.domain, args.noemail, args.novalidate, args.tag, args.id, args.classname, args.wait, args.max, args.outfile)
 
 ### BOILERPLATE ###
 if __name__ == "__main__":
