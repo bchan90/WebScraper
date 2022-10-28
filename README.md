@@ -30,6 +30,14 @@ pip install beautifulsoup4
 
 [PyPi BeautifulSoup4](https://pypi.org/project/beautifulsoup4/)
 
+#### lxml
+
+```
+pip install lxml
+```
+
+[lxml Project Page](https://lxml.de)
+
 #### validate-email-address
 
 ```
@@ -37,6 +45,14 @@ pip install validate-email-address
 ```
 
 [PyPi validate-email-address](https://pypi.org/project/validate-email-address/)
+
+#### py3DNS
+
+```
+pip install py3DNS
+```
+
+[PyPi py3DNS](https://pypi.org/project/py3DNS)
 
 ## How to Use
 The script has one required positional argument, which is the starting domain to scrape.

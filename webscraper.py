@@ -39,14 +39,15 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m, arg_o):
     options.add_argument('--headless')
     driver = webdriver.Firefox(options=options, service=service)
 
-    # Create list for Expected Conditions #
+    # Initialize list for Expected Conditions #
     ec_list = []
 
     original_url = str_url
-    # validate url schema #
+    # Validate URL schema #
     if not urlsplit(original_url)[0]:
         original_url = 'http://' + original_url
 
+    # Check if URL is accessible #
     try:
         driver.get(original_url)
     except:
@@ -54,10 +55,11 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m, arg_o):
         print(f'Error navigating to {original_url}. Please ensure the URL was entered correctly.')
         return
 
+    # Initialize lists for URLs to scrape and visited URLs #
     unscraped = deque([driver.current_url])
     scraped = set()
 
-    # create dictionary with values containing sets #
+    # Initialize dictionary for data #
     data = {}
     if arg_e:
         data['email'] = set()
@@ -80,7 +82,7 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m, arg_o):
         scrape_max = arg_m
 
     while len(unscraped) and (scrape_max == 0 or len(scraped) < scrape_max):
-        # re-initalize elements #
+        # Re-initalize elements #
         elements = ()
         url = unscraped.popleft()
         scraped.add(url)
@@ -95,9 +97,11 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m, arg_o):
 
         print(f'Crawling URL {url}')
 
+        # Load URL in Selenium browser #
         driver.get(url)
         soup = BeautifulSoup(driver.page_source, 'lxml')
 
+        # Add wait conditions for WebDriverWait #
         if arg_w:
             try:
                 if arg_t:
@@ -123,6 +127,7 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m, arg_o):
             finally:
                 pass
         
+        # Find all strings matching RegEx for email addresses #
         if arg_e:
             new_emails = set(re.findall(r'[\w.+-]+@[\w-]+\.[\w.-]+', driver.page_source, re.I))
             data['email'].update(new_emails)
@@ -154,6 +159,7 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m, arg_o):
             except:
                 pass
 
+        # Find all links #
         for anchor in soup.find_all('a'):
             if 'href' in anchor.attrs:
                 link = anchor.attrs['href']
@@ -169,7 +175,8 @@ def web_scraper(str_url, arg_e, arg_t, arg_id, arg_a, arg_w, arg_m, arg_o):
                 if link.startswith(base_url):
                     if not link in unscraped and not link in scraped:
                         unscraped.append(link)
-
+    
+    # Close Selenium browser #
     driver.quit()
 
     if arg_e:
