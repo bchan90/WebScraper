@@ -59,6 +59,7 @@ The script has one required positional argument, which is the starting domain to
 Without specifying any additional options, this will scrape the domain(s) for any email addresses.
 There are additional options that can be specified such as:
 * -e or --noemail: switches the default behavior of the script so it does not scrape for email addresses.
+* -nv or --novalidate: turns off email validation.
 * -t or --tag: allows for the user to specify a specific tag name to scrape for.
 * -id: allows for the user to specify a specific class ID name to scrape for.
 * -a or --attr: allows for the user to specify a specific class name to scrape for.
