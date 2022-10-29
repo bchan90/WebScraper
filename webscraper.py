@@ -86,14 +86,6 @@ def web_scraper(str_url, arg_e, arg_nv, arg_t, arg_id, arg_c, arg_w, arg_m, arg_
         url = unscraped.popleft()
         scraped.add(url)
 
-        parts = urlsplit(url)
-
-        base_url = f'{parts[0]}://{parts[1]}'
-        if '/' in parts[2]:
-            path = url[:url.rfind('/') + 1]
-        else:
-            path = url
-
         print(f'Crawling URL {url}')
 
         # Load URL in Selenium browser #
@@ -157,6 +149,14 @@ def web_scraper(str_url, arg_e, arg_nv, arg_t, arg_id, arg_c, arg_w, arg_m, arg_
                         data[c].add(element.text)
             except:
                 pass
+
+        parts = urlsplit(url)
+
+        base_url = f'{parts[0]}://{parts[1]}'
+        if '/' in parts[2]:
+            path = url[:url.rfind('/') + 1]
+        else:
+            path = url
 
         # Find all links #
         for anchor in soup.find_all('a'):
