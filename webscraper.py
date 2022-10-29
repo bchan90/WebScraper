@@ -159,6 +159,7 @@ def web_scraper(str_url, arg_e, arg_nv, arg_t, arg_id, arg_c, arg_w, arg_m, arg_
             path = url
 
         # Find all links #
+        soup = BeautifulSoup(driver.page_source, 'lxml')
         for anchor in soup.find_all('a'):
             if 'href' in anchor.attrs:
                 link = anchor.attrs['href']
