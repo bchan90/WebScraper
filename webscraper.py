@@ -90,7 +90,6 @@ def web_scraper(str_url, arg_e, arg_nv, arg_t, arg_id, arg_c, arg_w, arg_m, arg_
 
         # Load URL in Selenium browser #
         driver.get(url)
-        soup = BeautifulSoup(driver.page_source, 'lxml')
 
         # Add wait conditions for WebDriverWait #
         if arg_w:
