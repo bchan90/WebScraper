@@ -83,8 +83,6 @@ def web_scraper(str_url, arg_e, arg_nv, arg_t, arg_id, arg_c, arg_w, arg_m, arg_
         scrape_max = arg_m
 
     while len(unscraped) and (scrape_max == 0 or len(scraped) < scrape_max):
-        # Re-initalize elements #
-        elements = ()
         url = unscraped.popleft()
         scraped.add(url)
 
@@ -211,8 +209,6 @@ def email_validator(email_list):
         if not validate_email(e, verify=True):
             print(f'Email {e} is not valid. Removing from list')
             email_list.remove(e)
-
-    return email_list
 
 
 def main():
